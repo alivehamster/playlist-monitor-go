@@ -1,9 +1,10 @@
-module github.com/alivehamster/playlist-manager-go
+module github.com/alivehamster/playlist-monitor-go
 
 go 1.26.1
 
 require (
 	github.com/a-h/templ v0.3.1001
+	github.com/bogem/id3v2/v2 v2.1.4
 	github.com/gofiber/fiber/v3 v3.1.0
 )
 
