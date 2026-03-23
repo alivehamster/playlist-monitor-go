@@ -31,6 +31,9 @@ func getID(filepath string) (string, error) {
 
 func GetSongsId(playlistsdir string) (map[string]bool, error) {
 	songs := make(map[string]bool)
+	if err := os.MkdirAll(playlistsdir, 0755); err != nil {
+		return nil, fmt.Errorf("error creating directory: %w", err)
+	}
 	files, err := os.ReadDir(playlistsdir)
 	if err != nil {
 		return nil, fmt.Errorf("error reading directory: %w", err)

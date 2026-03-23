@@ -78,7 +78,7 @@ func downloadSongs(binPath string, songs []string, path string) error {
 	return cmd.Run()
 }
 
-func CheckPlaylists(playlists []Playlist, binPath string, playlistStates map[string]map[string]bool) error {
+func CheckPlaylists(binPath string, playlists []Playlist, playlistStates map[string]map[string]bool) error {
 	for _, playlist := range playlists {
 		entries, err := getPlaylistInfo(binPath, playlist.URL)
 		if err != nil {
@@ -107,12 +107,12 @@ func CheckPlaylists(playlists []Playlist, binPath string, playlistStates map[str
 		missing := filterPlaylist(entries, localSongs)
 		if len(missing) == 0 {
 			fmt.Println("No new songs to download.")
-			return nil
+			continue
 		}
 
-		if err := downloadSongs(binPath, missing, playlist.DownloadPath); err != nil {
-			fmt.Fprintf(os.Stderr, "error downloading songs: %v\n", err)
-			return err
+		err = downloadSongs(binPath, missing, playlist.DownloadPath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "warning: some songs failed to download: %v\n", err)
 		}
 	}
 	return nil
@@ -124,6 +124,6 @@ func CheckPlaylistsJob(binPath string, cfg *Config, playlistStates map[string]ma
 		playlists := make([]Playlist, len(cfg.Data.Playlists))
 		copy(playlists, cfg.Data.Playlists)
 		cfg.RUnlock()
-		return CheckPlaylists(playlists, binPath, playlistStates)
+		return CheckPlaylists(binPath, playlists, playlistStates)
 	}
 }
