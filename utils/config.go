@@ -38,8 +38,8 @@ func LoadConfig() (*Config, error) {
 
 func SaveConfig(cfg *Config) error {
 	cfg.RLock()
-	defer cfg.RUnlock()
 	b, err := json.MarshalIndent(cfg.Data, "", "  ")
+	cfg.RUnlock()
 	if err != nil {
 		return err
 	}
