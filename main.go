@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"log"
+	"strings"
 
 	"github.com/a-h/templ"
 	"github.com/alivehamster/playlist-monitor-go/utils"
@@ -28,28 +29,33 @@ func main() {
 	defer cancel()
 
 	playlistStates := map[string]map[string]bool{}
-	utils.StartDaily(ctx, utils.CheckPlaylistsJob(binPath, config.Playlists, playlistStates))
+	utils.StartDaily(ctx, utils.CheckPlaylistsJob(binPath, config, playlistStates))
 
 	app := fiber.New()
 
 	app.Get("/", func(c fiber.Ctx) error {
 		c.Set("Content-Type", "text/html")
-
-		return render(c, body(config.Playlists))
+		config.RLock()
+		playlists := make([]utils.Playlist, len(config.Data.Playlists))
+		copy(playlists, config.Data.Playlists)
+		config.RUnlock()
+		return render(c, body(playlists))
 	})
 
 	app.Post("/add-playlist", func(c fiber.Ctx) error {
-		url := c.FormValue("url")
-		downloadPath := c.FormValue("downloadPath")
+		url := strings.Clone(c.FormValue("url"))
+		downloadPath := strings.Clone(c.FormValue("downloadPath"))
 
 		if url == "" || downloadPath == "" {
 			return c.Status(fiber.StatusBadRequest).SendString("URL and Download Path are required")
 		}
 
-		config.Playlists = append(config.Playlists, utils.Playlist{
+		config.Lock()
+		config.Data.Playlists = append(config.Data.Playlists, utils.Playlist{
 			URL:          url,
 			DownloadPath: downloadPath,
 		})
+		config.Unlock()
 
 		if err := utils.SaveConfig(config); err != nil {
 			return c.Status(fiber.StatusInternalServerError).SendString("Failed to save config")

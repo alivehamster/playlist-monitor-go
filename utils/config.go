@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"sync"
 )
 
 type Playlist struct {
@@ -11,27 +12,34 @@ type Playlist struct {
 	DownloadPath string `json:"download_path"`
 }
 
-type Config struct {
+type ConfigData struct {
 	Playlists []Playlist `json:"playlists"`
 }
 
-func LoadConfig() (Config, error) {
+type Config struct {
+	sync.RWMutex
+	Data ConfigData
+}
+
+func LoadConfig() (*Config, error) {
 	b, err := os.ReadFile("config/config.json")
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return Config{}, nil
+			return &Config{}, nil
 		}
-		return Config{}, err
+		return nil, err
 	}
-	var cfg Config
-	if err := json.Unmarshal(b, &cfg); err != nil {
-		return Config{}, err
+	var data ConfigData
+	if err := json.Unmarshal(b, &data); err != nil {
+		return nil, err
 	}
-	return cfg, nil
+	return &Config{Data: data}, nil
 }
 
-func SaveConfig(cfg Config) error {
-	b, err := json.MarshalIndent(cfg, "", "  ")
+func SaveConfig(cfg *Config) error {
+	cfg.RLock()
+	defer cfg.RUnlock()
+	b, err := json.MarshalIndent(cfg.Data, "", "  ")
 	if err != nil {
 		return err
 	}

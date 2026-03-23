@@ -118,8 +118,12 @@ func CheckPlaylists(playlists []Playlist, binPath string, playlistStates map[str
 	return nil
 }
 
-func CheckPlaylistsJob(binPath string, playlists []Playlist, playlistStates map[string]map[string]bool) func() error {
+func CheckPlaylistsJob(binPath string, cfg *Config, playlistStates map[string]map[string]bool) func() error {
 	return func() error {
+		cfg.RLock()
+		playlists := make([]Playlist, len(cfg.Data.Playlists))
+		copy(playlists, cfg.Data.Playlists)
+		cfg.RUnlock()
 		return CheckPlaylists(playlists, binPath, playlistStates)
 	}
 }
