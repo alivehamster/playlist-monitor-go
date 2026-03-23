@@ -1,0 +1,28 @@
+package main
+
+import (
+	"github.com/alivehamster/playlist-manager-go/utils"
+)
+
+templ body(playlists []utils.Playlist){
+	@addPlaylistForm()
+	@listPlaylists(playlists)
+
+}
+
+templ listPlaylists(playlists []utils.Playlist){
+	for _, playlist := range playlists {
+		<div>
+			<h2>{playlist.URL}</h2>
+			<p>{playlist.DownloadPath}</p>
+		</div>
+	}
+}
+
+templ addPlaylistForm() {
+	<form method="POST" action="/add-playlist">
+		<input type="text" name="url" placeholder="Playlist URL" required />
+		<input type="text" name="downloadPath" placeholder="Download Path" required />
+		<button type="submit">Add Playlist</button>
+	</form>
+}
