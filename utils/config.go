@@ -16,7 +16,7 @@ type Config struct {
 }
 
 func LoadConfig() (Config, error) {
-	b, err := os.ReadFile("config.json")
+	b, err := os.ReadFile("config/config.json")
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return Config{}, nil
@@ -35,5 +35,8 @@ func SaveConfig(cfg Config) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile("config.json", b, 0644)
+	if err := os.MkdirAll("config", 0755); err != nil {
+		return err
+	}
+	return os.WriteFile("config/config.json", b, 0644)
 }
