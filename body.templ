@@ -5,24 +5,88 @@ import (
 )
 
 templ body(playlists []utils.Playlist){
-	@addPlaylistForm()
-	@listPlaylists(playlists)
+	<style>
+		*, *::before, *::after { box-sizing: border-box; }
+		body { font-family: sans-serif; max-width: 860px; margin: 2rem auto; padding: 0 1.25rem; background: #f5f5f5; color: #222; }
+		h1 { margin-bottom: 1.5rem; }
 
+		/* Buttons */
+		.btn { display: inline-block; padding: 0.5rem 1.1rem; border: none; border-radius: 5px; cursor: pointer; font-size: 0.95rem; font-weight: 500; text-decoration: none; }
+		.btn:hover, .btn:focus { text-decoration: none; }
+		.btn-primary { background: #0070f3; color: #fff; }
+		.btn-primary:hover { background: #005ecb; }
+		.btn-secondary { background: #e0e0e0; color: #333; }
+		.btn-secondary:hover { background: #c8c8c8; }
+		.btn-danger { background: #e53e3e; color: #fff; }
+		.btn-danger:hover { background: #c53030; }
+
+		/* Modal */
+		dialog { border: none; border-radius: 10px; padding: 2rem; box-shadow: 0 8px 32px rgba(0,0,0,0.25); min-width: 380px; }
+		dialog::backdrop { background: rgba(0,0,0,0.45); }
+		dialog h2 { margin-top: 0; margin-bottom: 1.25rem; }
+		.dialog-fields { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.25rem; }
+		.dialog-fields input { padding: 0.55rem 0.75rem; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem; width: 100%; }
+		.dialog-fields input:focus { outline: 2px solid #0070f3; border-color: transparent; }
+		.dialog-actions { display: flex; gap: 0.6rem; justify-content: flex-end; }
+
+		/* Playlist box */
+		.playlist-box { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 1.5rem; margin-top: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+		.playlist-box-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+		.playlist-box-header h2 { margin: 0; }
+		.playlist-empty { color: #888; font-style: italic; }
+		.playlist-item { display: flex; justify-content: space-between; align-items: center; padding: 0.85rem 1rem; border: 1px solid #ececec; border-radius: 7px; margin-bottom: 0.6rem; background: #fafafa; gap: 1rem; }
+		.playlist-item:last-child { margin-bottom: 0; }
+		.playlist-info { display: flex; flex-direction: column; gap: 0.2rem; overflow: hidden; }
+		.playlist-info .url { font-weight: 600; word-break: break-all; }
+		.playlist-info .path { font-size: 0.875rem; color: #555; word-break: break-all; }
+		.playlist-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+		.playlist-actions form { margin: 0; }
+	</style>
+
+	<h1>YTM Playlist Monitor</h1>
+
+	<button class="btn btn-primary" onclick="document.getElementById('addModal').showModal()">+ Add Playlist</button>
+
+	<dialog id="addModal">
+		<h2>Add Playlist</h2>
+		<form method="POST" action="/add-playlist">
+			<div class="dialog-fields">
+				<input type="text" name="url" placeholder="Playlist URL" required/>
+				<input type="text" name="downloadPath" placeholder="Download Path" required/>
+			</div>
+			<div class="dialog-actions">
+				<button type="button" class="btn btn-secondary" onclick="document.getElementById('addModal').close()">Cancel</button>
+				<button type="submit" class="btn btn-primary">Add</button>
+			</div>
+		</form>
+	</dialog>
+
+	@listPlaylists(playlists)
 }
 
 templ listPlaylists(playlists []utils.Playlist){
-	for _, playlist := range playlists {
-		<div>
-			<h2>{playlist.URL}</h2>
-			<p>{playlist.DownloadPath}</p>
+	<div class="playlist-box">
+		<div class="playlist-box-header">
+			<h2>Playlists</h2>
 		</div>
-	}
-}
-
-templ addPlaylistForm() {
-	<form method="POST" action="/add-playlist">
-		<input type="text" name="url" placeholder="Playlist URL" required />
-		<input type="text" name="downloadPath" placeholder="Download Path" required />
-		<button type="submit">Add Playlist</button>
-	</form>
+		if len(playlists) == 0 {
+			<p class="playlist-empty">No playlists added yet.</p>
+		} else {
+			for _, playlist := range playlists {
+				<div class="playlist-item">
+					<div class="playlist-info">
+						<span class="url">{ playlist.URL }</span>
+						<span class="path">{ playlist.DownloadPath }</span>
+					</div>
+				<div class="playlist-actions">
+					<a href={ templ.SafeURL(playlist.URL) } target="_blank" rel="noopener noreferrer" class="btn btn-primary">Open</a>
+						<form method="POST" action="/remove-playlist">
+							<input type="hidden" name="url" value={ playlist.URL }/>
+							<button type="submit" class="btn btn-danger">Remove</button>
+						</form>
+					</div>
+				</div>
+			}
+		}
+	</div>
 }

@@ -64,5 +64,28 @@ func main() {
 		return c.Redirect().To("/")
 	})
 
+	app.Post("/remove-playlist", func(c fiber.Ctx) error {
+		url := strings.Clone(c.FormValue("url"))
+		if url == "" {
+			return c.Status(fiber.StatusBadRequest).SendString("URL is required")
+		}
+
+		config.Lock()
+		playlists := config.Data.Playlists
+		for i, p := range playlists {
+			if p.URL == url {
+				config.Data.Playlists = append(playlists[:i], playlists[i+1:]...)
+				break
+			}
+		}
+		config.Unlock()
+
+		if err := utils.SaveConfig(config); err != nil {
+			return c.Status(fiber.StatusInternalServerError).SendString("Failed to save config")
+		}
+
+		return c.Redirect().To("/")
+	})
+
 	log.Fatal(app.Listen(":3000"))
 }
