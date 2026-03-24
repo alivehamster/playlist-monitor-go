@@ -6,15 +6,9 @@ import (
 	"log"
 	"strings"
 
-	"github.com/a-h/templ"
 	"github.com/alivehamster/playlist-monitor-go/utils"
 	"github.com/gofiber/fiber/v3"
 )
-
-func render(c fiber.Ctx, component templ.Component) error {
-	c.Set("Content-Type", "text/html")
-	return component.Render(c.Context(), c.Response().BodyWriter())
-}
 
 func main() {
 	binPath := *flag.String("bin", "./yt-dlp_linux", "path to yt-dlp binary")
@@ -34,12 +28,12 @@ func main() {
 	app := fiber.New()
 
 	app.Get("/", func(c fiber.Ctx) error {
-		c.Set("Content-Type", "text/html")
 		config.RLock()
 		playlists := make([]utils.Playlist, len(config.Data.Playlists))
 		copy(playlists, config.Data.Playlists)
 		config.RUnlock()
-		return render(c, body(playlists))
+		c.Set("Content-Type", "text/html")
+		return body(playlists).Render(c.Context(), c.Response().BodyWriter())
 	})
 
 	app.Post("/add-playlist", func(c fiber.Ctx) error {
