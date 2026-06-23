@@ -1,10 +1,10 @@
-package main
+package web
 
 import (
-	"github.com/alivehamster/playlist-monitor-go/utils"
+	"github.com/alivehamster/playlist-monitor-go/internal"
 )
 
-templ body(playlists []utils.Playlist){
+templ Body(playlists []internal.Playlist){
 	<style>
 		*, *::before, *::after { box-sizing: border-box; }
 		body { font-family: sans-serif; max-width: 860px; margin: 2rem auto; padding: 0 1.25rem; background: #f5f5f5; color: #222; }
@@ -61,10 +61,10 @@ templ body(playlists []utils.Playlist){
 		</form>
 	</dialog>
 
-	@listPlaylists(playlists)
+	@ListPlaylists(playlists)
 }
 
-templ listPlaylists(playlists []utils.Playlist){
+templ ListPlaylists(playlists []internal.Playlist){
 	<div class="playlist-box">
 		<div class="playlist-box-header">
 			<h2>Playlists</h2>

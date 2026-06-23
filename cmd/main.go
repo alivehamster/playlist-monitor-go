@@ -6,7 +6,8 @@ import (
 	"log"
 	"strings"
 
-	"github.com/alivehamster/playlist-monitor-go/utils"
+	"github.com/alivehamster/playlist-monitor-go/internal"
+	"github.com/alivehamster/playlist-monitor-go/web"
 	"github.com/gofiber/fiber/v3"
 )
 
@@ -14,7 +15,7 @@ func main() {
 	binPath := *flag.String("bin", "./yt-dlp_linux", "path to yt-dlp binary")
 	flag.Parse()
 
-	config, err := utils.LoadConfig()
+	config, err := internal.LoadConfig()
 	if err != nil {
 		log.Fatalf("error loading config: %v", err)
 	}
@@ -23,17 +24,17 @@ func main() {
 	defer cancel()
 
 	playlistStates := map[string]map[string]bool{}
-	utils.StartDaily(ctx, utils.CheckPlaylistsJob(binPath, config, playlistStates))
+	internal.StartDaily(ctx, internal.CheckPlaylistsJob(binPath, config, playlistStates))
 
 	app := fiber.New()
 
 	app.Get("/", func(c fiber.Ctx) error {
 		config.RLock()
-		playlists := make([]utils.Playlist, len(config.Data.Playlists))
+		playlists := make([]internal.Playlist, len(config.Data.Playlists))
 		copy(playlists, config.Data.Playlists)
 		config.RUnlock()
 		c.Set("Content-Type", "text/html")
-		return body(playlists).Render(c.Context(), c.Response().BodyWriter())
+		return web.Body(playlists).Render(c.Context(), c.Response().BodyWriter())
 	})
 
 	app.Post("/add-playlist", func(c fiber.Ctx) error {
@@ -45,13 +46,13 @@ func main() {
 		}
 
 		config.Lock()
-		config.Data.Playlists = append(config.Data.Playlists, utils.Playlist{
+		config.Data.Playlists = append(config.Data.Playlists, internal.Playlist{
 			URL:          url,
 			DownloadPath: downloadPath,
 		})
 		config.Unlock()
 
-		if err := utils.SaveConfig(config); err != nil {
+		if err := internal.SaveConfig(config); err != nil {
 			return c.Status(fiber.StatusInternalServerError).SendString("Failed to save config")
 		}
 
@@ -74,7 +75,7 @@ func main() {
 		}
 		config.Unlock()
 
-		if err := utils.SaveConfig(config); err != nil {
+		if err := internal.SaveConfig(config); err != nil {
 			return c.Status(fiber.StatusInternalServerError).SendString("Failed to save config")
 		}
 
