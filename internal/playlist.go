@@ -32,11 +32,23 @@ func getPlaylistInfo(binPath, url string) ([]PlaylistEntry, error) {
 	return info.Entries, nil
 }
 
-func filterPlaylist(entries []PlaylistEntry, songs map[string]bool) []string {
+func filterDeleted(currentIDs map[string]bool, localSongs map[string]string) []string {
+	var toDelete []string
+
+	for id := range localSongs {
+		if currentIDs[id] {
+			continue
+		}
+		toDelete = append(toDelete, localSongs[id])
+	}
+	return toDelete
+}
+
+func filterNew(entries []PlaylistEntry, localSongs map[string]string) []string {
 	var missing []string
 
 	for _, entry := range entries {
-		if songs[entry.ID] {
+		if _, ok := localSongs[entry.ID]; ok {
 			continue
 		}
 		fmt.Printf("Missing: %s\n", entry.Title)
@@ -99,12 +111,24 @@ func CheckPlaylists(binPath string, playlists []Playlist, playlistStates map[str
 		}
 		playlistStates[playlist.URL] = currentIDs
 
-		localSongs, err := GetSongsId(playlist.DownloadPath)
+		localSongs, err := getSongsId(playlist.DownloadPath)
 		if err != nil {
 			return fmt.Errorf("error getting local songs: %w", err)
 		}
 
-		missing := filterPlaylist(entries, localSongs)
+		if playlist.Delete {
+			toDelete := filterDeleted(currentIDs, localSongs)
+			if len(toDelete) > 0 {
+				for _, path := range toDelete {
+					fmt.Printf("Deleting local file: %s\n", path)
+					if err := os.Remove(path); err != nil {
+						fmt.Fprintf(os.Stderr, "error deleting file %s: %v\n", path, err)
+					}
+				}
+			}
+		}
+
+		missing := filterNew(entries, localSongs)
 		if len(missing) == 0 {
 			fmt.Println("No new songs to download.")
 			continue

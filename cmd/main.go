@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/alivehamster/playlist-monitor-go/internal"
@@ -45,10 +46,16 @@ func main() {
 			return c.Status(fiber.StatusBadRequest).SendString("URL and Download Path are required")
 		}
 
+		deleteSongs, err := strconv.ParseBool(c.FormValue("delete", "false"))
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).SendString("Invalid delete value")
+		}
+
 		config.Lock()
 		config.Data.Playlists = append(config.Data.Playlists, internal.Playlist{
 			URL:          url,
 			DownloadPath: downloadPath,
+			Delete:       deleteSongs,
 		})
 		config.Unlock()
 

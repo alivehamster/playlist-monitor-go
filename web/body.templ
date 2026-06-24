@@ -25,8 +25,14 @@ templ Body(playlists []internal.Playlist){
 		dialog::backdrop { background: rgba(0,0,0,0.45); }
 		dialog h2 { margin-top: 0; margin-bottom: 1.25rem; }
 		.dialog-fields { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.25rem; }
-		.dialog-fields input { padding: 0.55rem 0.75rem; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem; width: 100%; }
-		.dialog-fields input:focus { outline: 2px solid #0070f3; border-color: transparent; }
+		.dialog-fields input[type="text"] { padding: 0.55rem 0.75rem; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem; width: 100%; }
+		.dialog-fields input[type="text"]:focus { outline: 2px solid #0070f3; border-color: transparent; }
+		.delete-option { display: inline-flex; align-items: center; gap: 0.45rem; width: fit-content; }
+		.delete-option input[type="checkbox"] { cursor: pointer; }
+		.tooltip-help { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 1.1rem; height: 1.1rem; border-radius: 999px; border: 1px solid #777; color: #555; font-size: 0.75rem; font-weight: 700; cursor: pointer; line-height: 1; }
+		.tooltip-text { visibility: hidden; opacity: 0; transition: opacity 0.15s ease; position: absolute; left: 50%; transform: translateX(-50%); bottom: 145%; white-space: nowrap; background: #333; color: #fff; font-size: 0.78rem; font-weight: 500; padding: 0.35rem 0.55rem; border-radius: 4px; z-index: 10; }
+		.tooltip-help:hover .tooltip-text,
+		.tooltip-help:focus .tooltip-text { visibility: visible; opacity: 1; }
 		.dialog-actions { display: flex; gap: 0.6rem; justify-content: flex-end; }
 
 		/* Playlist box */
@@ -53,6 +59,14 @@ templ Body(playlists []internal.Playlist){
 			<div class="dialog-fields">
 				<input type="text" name="url" placeholder="Playlist URL" required/>
 				<input type="text" name="downloadPath" placeholder="Download Path" required/>
+				<label class="delete-option">
+					<input type="checkbox" name="delete" value="true"/>
+					Delete
+					<span class="tooltip-help" tabindex="0" aria-label="delete songs in folder to match playlist">
+						<span class="tooltip-mark">?</span>
+						<span class="tooltip-text">Delete songs in folder to match playlist</span>
+					</span>
+				</label>
 			</div>
 			<div class="dialog-actions">
 				<button type="button" class="btn btn-secondary" onclick="document.getElementById('addModal').close()">Cancel</button>

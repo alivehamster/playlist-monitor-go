@@ -10,5 +10,5 @@ Every 24 hours this will scan your youtube music playlists and download any musi
 docker pull ghcr.io/alivehamster/playlist-monitor-go:main
 
 # start the container and go to the webui at localhost:3000 to add playlist and download location
-docker run -p 3000:3000 -v ./config:/app/config -v /path/on/host:/path/in/container ghcr.io/alivehamster/playlist-monitor-go:main
+docker run -p 3000:3000 -v ./config:/app/config -v /path/on/host:/path/in/container ghcr.io/alivehamster/playlist-monitor-go:latest
 ```

@@ -29,8 +29,8 @@ func getID(filepath string) (string, error) {
 	return "", nil
 }
 
-func GetSongsId(playlistsdir string) (map[string]bool, error) {
-	songs := make(map[string]bool)
+func getSongsId(playlistsdir string) (map[string]string, error) {
+	songs := make(map[string]string)
 	if err := os.MkdirAll(playlistsdir, 0755); err != nil {
 		return nil, fmt.Errorf("error creating directory: %w", err)
 	}
@@ -43,13 +43,14 @@ func GetSongsId(playlistsdir string) (map[string]bool, error) {
 		if file.IsDir() {
 			continue
 		}
-		id, err := getID(filepath.Join(playlistsdir, file.Name()))
+		path := filepath.Join(playlistsdir, file.Name())
+		id, err := getID(path)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error getting ID: %v\n", err)
 			continue
 		}
 		if id != "" {
-			songs[id] = true
+			songs[id] = path
 		}
 	}
 	return songs, nil

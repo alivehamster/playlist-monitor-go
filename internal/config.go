@@ -10,6 +10,7 @@ import (
 type Playlist struct {
 	URL          string `json:"url"`
 	DownloadPath string `json:"download_path"`
+	Delete       bool   `json:"delete"`
 }
 
 type ConfigData struct {
