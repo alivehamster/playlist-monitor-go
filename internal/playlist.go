@@ -130,7 +130,7 @@ func CheckPlaylists(binPath string, playlists []Playlist, playlistStates map[str
 
 		missing := filterNew(entries, localSongs)
 		if len(missing) == 0 {
-			fmt.Println("No new songs to download.")
+			fmt.Println("No new songs to download for playlist at", playlist.DownloadPath)
 			continue
 		}
 
@@ -138,6 +138,7 @@ func CheckPlaylists(binPath string, playlists []Playlist, playlistStates map[str
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "warning: some songs failed to download: %v\n", err)
 		}
+		fmt.Println("Finished downloading songs for playlist at", playlist.DownloadPath)
 	}
 	return nil
 }
