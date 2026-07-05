@@ -11,13 +11,12 @@ RUN go build -o ./app ./cmd/
 
 FROM alpine:latest
 
-ARG YTDLP_VERSION=2026.06.09
+ARG YTDLP_VERSION=2026.07.04
 WORKDIR /app
 
 RUN apk add --no-cache ffmpeg deno curl
 
-# RUN curl -fsSL "https://github.com/yt-dlp/yt-dlp/releases/download/${YTDLP_VERSION}/yt-dlp_musllinux" -o ./yt-dlp_linux
-RUN curl -fsSL "https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/download/2026.07.01.235203/yt-dlp_musllinux" -o ./yt-dlp_linux
+RUN curl -fsSL "https://github.com/yt-dlp/yt-dlp/releases/download/${YTDLP_VERSION}/yt-dlp_musllinux" -o ./yt-dlp_linux
 RUN chmod +x ./yt-dlp_linux
 
 COPY --from=builder /app/app .
