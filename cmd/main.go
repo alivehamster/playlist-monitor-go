@@ -51,12 +51,30 @@ func main() {
 			return c.Status(fiber.StatusBadRequest).SendString("Invalid delete value")
 		}
 
+		indexValue := strings.TrimSpace(c.FormValue("index"))
+		index := -1
+		if indexValue != "" {
+			var err error
+			index, err = strconv.Atoi(indexValue)
+			if err != nil {
+				return c.Status(fiber.StatusBadRequest).SendString("Invalid index value")
+			}
+		}
+
 		config.Lock()
-		config.Data.Playlists = append(config.Data.Playlists, internal.Playlist{
-			URL:          url,
-			DownloadPath: downloadPath,
-			Delete:       deleteSongs,
-		})
+		if index == -1 {
+			config.Data.Playlists = append(config.Data.Playlists, internal.Playlist{
+				URL:          url,
+				DownloadPath: downloadPath,
+				Delete:       deleteSongs,
+			})
+		} else {
+			config.Data.Playlists[index] = internal.Playlist{
+				URL:          url,
+				DownloadPath: downloadPath,
+				Delete:       deleteSongs,
+			}
+		}
 		config.Unlock()
 
 		if err := internal.SaveConfig(config); err != nil {

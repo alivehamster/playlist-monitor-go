@@ -1,10 +1,12 @@
 package web
 
 import (
+	"fmt"
+
 	"github.com/alivehamster/playlist-monitor-go/internal"
 )
 
-templ Body(playlists []internal.Playlist){
+templ Body(playlists []internal.Playlist) {
 	<style>
 		*, *::before, *::after { box-sizing: border-box; }
 		body { font-family: sans-serif; max-width: 860px; margin: 2rem auto; padding: 0 1.25rem; background: #f5f5f5; color: #222; }
@@ -48,19 +50,17 @@ templ Body(playlists []internal.Playlist){
 		.playlist-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
 		.playlist-actions form { margin: 0; }
 	</style>
-
 	<h1>YTM Playlist Monitor</h1>
-
-	<button class="btn btn-primary" onclick="document.getElementById('addModal').showModal()">+ Add Playlist</button>
-
-	<dialog id="addModal">
-		<h2>Add Playlist</h2>
+	<button class="btn btn-primary" onclick="addPlaylist()">+ Add Playlist</button>
+	<dialog id="editModal">
+		<h2 id="editModalLabel">Edit Playlist</h2>
 		<form method="POST" action="/add-playlist">
 			<div class="dialog-fields">
-				<input type="text" name="url" placeholder="Playlist URL" required/>
-				<input type="text" name="downloadPath" placeholder="Download Path" required/>
+				<input type="hidden" id="id" name="index"/>
+				<input id="playlist" type="text" name="url" placeholder="Playlist URL" required/>
+				<input id="downloadPath" type="text" name="downloadPath" placeholder="Download Path" required/>
 				<label class="delete-option">
-					<input type="checkbox" name="delete" value="true"/>
+					<input id="delete" type="checkbox" name="delete" value="true"/>
 					Delete
 					<span class="tooltip-help" tabindex="0" aria-label="delete songs in folder to match playlist">
 						<span class="tooltip-mark">?</span>
@@ -69,16 +69,15 @@ templ Body(playlists []internal.Playlist){
 				</label>
 			</div>
 			<div class="dialog-actions">
-				<button type="button" class="btn btn-secondary" onclick="document.getElementById('addModal').close()">Cancel</button>
-				<button type="submit" class="btn btn-primary">Add</button>
+				<button type="button" class="btn btn-secondary" onclick="document.getElementById('editModal').close()">Cancel</button>
+				<button type="submit" class="btn btn-primary">Save</button>
 			</div>
 		</form>
 	</dialog>
-
 	@ListPlaylists(playlists)
 }
 
-templ ListPlaylists(playlists []internal.Playlist){
+templ ListPlaylists(playlists []internal.Playlist) {
 	<div class="playlist-box">
 		<div class="playlist-box-header">
 			<h2>Playlists</h2>
@@ -86,14 +85,24 @@ templ ListPlaylists(playlists []internal.Playlist){
 		if len(playlists) == 0 {
 			<p class="playlist-empty">No playlists added yet.</p>
 		} else {
-			for _, playlist := range playlists {
+			for index, playlist := range playlists {
 				<div class="playlist-item">
 					<div class="playlist-info">
 						<span class="url">{ playlist.URL }</span>
 						<span class="path">{ playlist.DownloadPath }</span>
+						<span class="path">Delete: { fmt.Sprint(playlist.Delete) }</span>
 					</div>
-				<div class="playlist-actions">
-					<a href={ templ.SafeURL(playlist.URL) } target="_blank" rel="noopener noreferrer" class="btn btn-primary">Open</a>
+					<div class="playlist-actions">
+						<a href={ templ.SafeURL(playlist.URL) } target="_blank" rel="noopener noreferrer" class="btn btn-primary">Open</a>
+						<button
+							type="button"
+							class="btn btn-secondary"
+							data-index={ fmt.Sprint(index) }
+							data-url={ playlist.URL }
+							data-path={ playlist.DownloadPath }
+							data-delete={ fmt.Sprint(playlist.Delete) }
+							onclick="editPlaylist(this)"
+						>Edit</button>
 						<form method="POST" action="/remove-playlist">
 							<input type="hidden" name="url" value={ playlist.URL }/>
 							<button type="submit" class="btn btn-danger">Remove</button>
@@ -103,4 +112,23 @@ templ ListPlaylists(playlists []internal.Playlist){
 			}
 		}
 	</div>
+	<script>
+		function addPlaylist() {
+			document.getElementById('id').value = '';
+			document.getElementById('editModalLabel').textContent = 'Add Playlist';
+			document.getElementById('playlist').value = '';
+			document.getElementById('downloadPath').value = '';
+			document.getElementById('delete').checked = false;
+			document.getElementById('editModal').showModal();
+		}
+
+		function editPlaylist(button) {
+			document.getElementById('id').value = button.getAttribute('data-index');
+			document.getElementById('editModalLabel').textContent = 'Edit Playlist';
+			document.getElementById('playlist').value = button.getAttribute('data-url');
+			document.getElementById('downloadPath').value = button.getAttribute('data-path');
+			document.getElementById('delete').checked = button.getAttribute('data-delete') === 'true';
+			document.getElementById('editModal').showModal();
+		}
+	</script>
 }
