@@ -17,6 +17,8 @@ templ Body(playlists []internal.Playlist) {
 		.btn:hover, .btn:focus { text-decoration: none; }
 		.btn-primary { background: #0070f3; color: #fff; }
 		.btn-primary:hover { background: #005ecb; }
+		.btn-run { background: #2f9e44; color: #fff; }
+		.btn-run:hover { background: #2b8a3e; }
 		.btn-secondary { background: #e0e0e0; color: #333; }
 		.btn-secondary:hover { background: #c8c8c8; }
 		.btn-danger { background: #e53e3e; color: #fff; }
@@ -49,9 +51,16 @@ templ Body(playlists []internal.Playlist) {
 		.playlist-info .path { font-size: 0.875rem; color: #555; word-break: break-all; }
 		.playlist-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
 		.playlist-actions form { margin: 0; }
+		.header-actions { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+		.header-actions form { display: flex; align-items: center; margin: 0; }
 	</style>
 	<h1>YTM Playlist Monitor</h1>
-	<button class="btn btn-primary" onclick="addPlaylist()">+ Add Playlist</button>
+	<div class="header-actions">
+		<button class="btn btn-primary" onclick="addPlaylist()">+ Add Playlist</button>
+		<form method="POST" action="/run">
+			<button type="submit" class="btn btn-run">Run</button>
+		</form>
+	</div>
 	<dialog id="editModal">
 		<h2 id="editModalLabel">Edit Playlist</h2>
 		<form method="POST" action="/add-playlist">
@@ -71,6 +80,17 @@ templ Body(playlists []internal.Playlist) {
 			<div class="dialog-actions">
 				<button type="button" class="btn btn-secondary" onclick="document.getElementById('editModal').close()">Cancel</button>
 				<button type="submit" class="btn btn-primary">Save</button>
+			</div>
+		</form>
+	</dialog>
+	<dialog id="removeModal">
+		<h2>Remove Playlist</h2>
+		<p>Are you sure you want to remove this playlist?</p>
+		<form method="POST" action="/remove-playlist">
+			<input type="hidden" id="removeUrl" name="url"/>
+			<div class="dialog-actions">
+				<button type="button" class="btn btn-secondary" onclick="document.getElementById('removeModal').close()">Cancel</button>
+				<button type="submit" class="btn btn-danger">Remove</button>
 			</div>
 		</form>
 	</dialog>
@@ -103,10 +123,7 @@ templ ListPlaylists(playlists []internal.Playlist) {
 							data-delete={ fmt.Sprint(playlist.Delete) }
 							onclick="editPlaylist(this)"
 						>Edit</button>
-						<form method="POST" action="/remove-playlist">
-							<input type="hidden" name="url" value={ playlist.URL }/>
-							<button type="submit" class="btn btn-danger">Remove</button>
-						</form>
+						<button type="button" class="btn btn-danger" onclick="removePlaylist(this)" data-url={ playlist.URL }>Remove</button>
 					</div>
 				</div>
 			}
@@ -129,6 +146,11 @@ templ ListPlaylists(playlists []internal.Playlist) {
 			document.getElementById('downloadPath').value = button.getAttribute('data-path');
 			document.getElementById('delete').checked = button.getAttribute('data-delete') === 'true';
 			document.getElementById('editModal').showModal();
+		}
+
+		function removePlaylist(button) {
+			document.getElementById('removeUrl').value = button.getAttribute('data-url');
+			document.getElementById('removeModal').showModal();
 		}
 	</script>
 }

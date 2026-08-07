@@ -38,6 +38,12 @@ func main() {
 		return web.Body(playlists).Render(c.Context(), c.Response().BodyWriter())
 	})
 
+	app.Post("/run", func(c fiber.Ctx) error {
+		go internal.CheckPlaylistsJob(binPath, config, playlistStates)()
+		return c.Redirect().To("/")
+
+	})
+
 	app.Post("/add-playlist", func(c fiber.Ctx) error {
 		url := strings.Clone(c.FormValue("url"))
 		downloadPath := strings.Clone(c.FormValue("downloadPath"))
