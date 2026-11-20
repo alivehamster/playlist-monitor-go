@@ -73,7 +73,9 @@ func setsEqual(a, b map[string]bool) bool {
 func downloadSongs(binPath string, songs []string, path string) error {
 	args := []string{
 		"-f", "bestaudio/best",
-		"-o", fmt.Sprintf("%s/%%(title)s - %%(artist)s.%%(ext)s", path),
+		"-P", fmt.Sprintf("home:%s", path),
+		"-P", fmt.Sprintf("temp:%s", os.TempDir()+"/ytm-playlist-monitor"),
+		"-o", "%(title)s - %(artist)s.%(ext)s",
 		"--extract-audio",
 		"--audio-format", "mp3",
 		"--audio-quality", "0",

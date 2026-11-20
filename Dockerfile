@@ -11,7 +11,7 @@ RUN go build -o ./app ./cmd/
 
 FROM alpine:latest
 
-ARG YTDLP_VERSION=2026.10.21
+ARG YTDLP_VERSION=2026.10.26
 WORKDIR /app
 
 RUN apk add --no-cache ffmpeg deno curl
